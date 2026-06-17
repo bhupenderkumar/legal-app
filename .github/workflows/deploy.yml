@@ -1,71 +1,43 @@
-name: Deploy LexAI to AWS ECS
+name: Deploy LexAI to EC2
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: lexai-app
-  ECS_CLUSTER: production-lexai-cluster
-  ECS_SERVICE: production-lexai-service
-  ECS_TASK_DEFINITION: production-lexai-task
-  CONTAINER_NAME: lexai-app
-
-permissions:
-  contents: read
-
 jobs:
   deploy:
-    name: Build & Deploy
+    name: Deploy via SSH
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            echo "=== Pulling latest code ==="
+            cd /home/ec2-user/legal-app
+            git pull origin main
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+            echo "=== Installing dependencies ==="
+            pip3 install -r requirements.txt
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+            echo "=== Restarting service ==="
+            sudo systemctl daemon-reload
+            sudo systemctl restart lexai
 
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-            --query taskDefinition \
-            --output json > task-definition.json
+            echo "=== Checking service status ==="
+            sleep 3
+            sudo systemctl status lexai --no-pager | head -5
 
-      - name: Fill in new image ID in task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+            echo "=== Health check ==="
+            curl -sf http://localhost:5000/ && echo "OK" || echo "FAIL"
 
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+            echo "=== Done ==="

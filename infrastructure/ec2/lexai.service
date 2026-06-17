@@ -1,0 +1,15 @@
+[Unit]
+Description=LexAI Legal Intelligence Platform
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/legal-app
+EnvironmentFile=/home/ec2-user/legal-app/.env
+ExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 --access-logfile /home/ec2-user/logs/access.log --error-logfile /home/ec2-user/logs/error.log legal_app.app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
