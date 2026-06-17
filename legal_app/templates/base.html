@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Legal Document Assistant{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #1a3a5c; --accent: #c8a951; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f6f8; }
+        .navbar { background: var(--primary) !important; }
+        .navbar-brand { color: #fff !important; font-weight: 700; letter-spacing: .5px; }
+        .navbar-brand i { color: var(--accent); }
+        .hero { background: linear-gradient(135deg, #1a3a5c 0%, #2c5f8a 100%); color: #fff; padding: 3rem 0; }
+        .hero h1 { font-weight: 800; }
+        .hero .lead { opacity: .85; }
+        .card-doc { border: none; border-radius: 12px; transition: transform .15s, box-shadow .15s; cursor: pointer; height: 100%; }
+        .card-doc:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,.12); }
+        .card-doc .icon { font-size: 2.5rem; }
+        .category-header { color: var(--primary); font-weight: 700; border-bottom: 3px solid var(--accent); padding-bottom: .5rem; }
+        .badge-cat { background: var(--accent); color: #000; font-weight: 600; }
+        .disclaimer { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: #2c5f8a; border-color: #2c5f8a; }
+        .btn-accent { background: var(--accent); color: #000; border: none; font-weight: 600; }
+        .btn-accent:hover { background: #b8993f; }
+        .preview-content { font-family: 'Times New Roman', Times, serif; font-size: 13px; line-height: 1.8;
+                           background: #fff; border: 1px solid #ddd; padding: 40px 60px; min-height: 500px;
+                           box-shadow: 0 2px 10px rgba(0,0,0,.08); max-width: 816px; margin: 0 auto; }
+        .spinner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                          background: rgba(0,0,0,.5); z-index: 9999; display: none;
+                          justify-content: center; align-items: center; flex-direction: column; }
+        .spinner-overlay.active { display: flex; }
+        .spinner-overlay .text-white { font-size: 1.2rem; }
+        footer { background: var(--primary); color: rgba(255,255,255,.7); }
+        footer a { color: var(--accent); }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-briefcase-fill"></i> Legal Document Assistant</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white-50" href="/">Home</a>
+                <a class="nav-link text-white-50" href="/about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container mt-3">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-1"><strong>⚠️ Disclaimer:</strong> This tool generates document templates for informational purposes only. It does not constitute legal advice. Always have a licensed attorney review documents before filing.</p>
+            <p class="mb-0 small">Powered by Amazon Nova Pro on AWS Bedrock &bull; &copy; 2026</p>
+        </div>
+    </footer>
+
+    <div class="spinner-overlay" id="loadingOverlay">
+        <div class="spinner-border text-light" style="width:3rem;height:3rem" role="status"></div>
+        <p class="text-white mt-3">Generating your document with AI...<br><small>This may take 15-30 seconds</small></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
