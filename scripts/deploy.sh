@@ -24,7 +24,7 @@ pip3 install -r requirements.txt 2>&1 | tail -5
 if [ ! -f .env ]; then
     echo "[deploy] Creating .env..."
     cat > .env << 'EOF'
-AWS_REGION=us-east-1
+AWS_REGION=ap-south-1
 LEXAI_MODEL=amazon.nova-pro-v1:0
 FLASK_ENV=production
 EOF

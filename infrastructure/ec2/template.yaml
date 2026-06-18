@@ -166,6 +166,9 @@ Resources:
           FLASK_ENV=production
           EOF
 
+          # Ensure proper permissions
+          chown -R ec2-user:ec2-user /home/ec2-user/legal-app
+
           # Create systemd service
           cat > /etc/systemd/system/lexai.service << 'SERVICEEOF'
           [Unit]
@@ -175,9 +178,9 @@ Resources:
           [Service]
           Type=simple
           User=ec2-user
-          WorkingDirectory=/home/ec2-user/legal-app
+          WorkingDirectory=/home/ec2-user/legal-app/legal_app
           EnvironmentFile=/home/ec2-user/legal-app/.env
-          ExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 legal_app.app:app
+          ExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 app:app
           Restart=always
           RestartSec=5
 
