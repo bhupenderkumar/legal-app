@@ -25,7 +25,7 @@ if [ ! -f .env ]; then
     echo "[deploy] Creating .env..."
     cat > .env << 'EOF'
 AWS_REGION=ap-south-1
-LEXAI_MODEL=amazon.nova-pro-v1:0
+LEXAI_MODEL=apac.amazon.nova-pro-v1:0
 FLASK_ENV=production
 EOF
 fi

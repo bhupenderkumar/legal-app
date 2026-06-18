@@ -162,7 +162,7 @@ Resources:
           # Create .env with defaults
           cat > /home/ec2-user/legal-app/.env << 'EOF'
           AWS_REGION=ap-south-1
-          LEXAI_MODEL=amazon.nova-pro-v1:0
+          LEXAI_MODEL=apac.amazon.nova-pro-v1:0
           FLASK_ENV=production
           EOF
 
