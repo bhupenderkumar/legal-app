@@ -148,7 +148,7 @@ Resources:
 
           # System updates
           dnf update -y
-          dnf install -y python3 python3-pip python3-devel git nginx curl gcc
+          dnf install -y python3 python3-pip python3-devel git --allowerasing
 
           # Install Python deps
           pip3 install --no-cache-dir flask boto3 python-docx docxtpl reportlab gunicorn
