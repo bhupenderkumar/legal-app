@@ -9,16 +9,16 @@ Parameters:
 
   InstanceType:
     Type: String
-    Default: t4g.nano
+    Default: t3.micro
     AllowedValues:
       - t4g.nano
       - t3.micro
-    Description: "t4g.nano (~$4.18/mo) or t3.micro (free tier eligible, ~$8.50/mo after)"
+    Description: "t4g.nano (~$4.18/mo) or t3.micro (free tier eligible)"
 
   AmiId:
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2
-    Description: Amazon Linux 2 ARM64 AMI (auto-resolves)
+    Type: String
+    Default: ami-009be0edec0817ffd
+    Description: Amazon Linux 2023 x86_64 AMI (Python 3.11 built-in)
 
   SshKeyName:
     Type: String
@@ -109,17 +109,6 @@ Resources:
                   - bedrock:InvokeModelWithResponseStream
                   - bedrock:Converse
                 Resource: "*"
-        - PolicyName: SSMAgent
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:DescribeParameters
-                  - ssm:GetParameter
-                  - ssm:GetParameters
-                Resource: "*"
-
   Ec2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -158,22 +147,21 @@ Resources:
           set -ex
 
           # System updates
-          yum update -y
-          amazon-linux-extras enable python3.12 2>/dev/null || true
-          yum install -y python3 python3-pip python3-devel git nginx curl gcc
+          dnf update -y
+          dnf install -y python3 python3-pip python3-devel git nginx curl gcc
 
           # Install Python deps
-          pip3 install flask boto3 python-docx docxtpl reportlab gunicorn
+          pip3 install --no-cache-dir flask boto3 python-docx docxtpl reportlab gunicorn
 
           # Clone app
           cd /home/ec2-user
           git clone https://github.com/bhupenderkumar/legal-app.git /home/ec2-user/legal-app || true
           cd /home/ec2-user/legal-app
-          pip3 install -r requirements.txt
+          pip3 install --no-cache-dir -r requirements.txt
 
           # Create .env with defaults
           cat > /home/ec2-user/legal-app/.env << 'EOF'
-          AWS_REGION=us-east-1
+          AWS_REGION=ap-south-1
           LEXAI_MODEL=amazon.nova-pro-v1:0
           FLASK_ENV=production
           EOF
